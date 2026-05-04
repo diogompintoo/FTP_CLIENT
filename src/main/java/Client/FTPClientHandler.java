@@ -8,18 +8,109 @@ public class FTPClientHandler {
     private final Socket socket;
     private final BufferedReader in;
     private final PrintWriter out;
+    private final DataInputStream dataIn;
+    private final DataOutputStream dataOut;
 
     public FTPClientHandler(Socket socket) throws IOException {
         this.socket = socket;
 
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
-
+        this.dataIn = new DataInputStream(socket.getInputStream());
+        this.dataOut = new DataOutputStream(socket.getOutputStream());
 
     }
 
     public void start() throws IOException {
+        BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.println(in.readLine());
+
+        String input;
+        while ((input = console.readLine()) != null) {
+
+            out.println(input);
+
+            String[] parts = input.split(" ", 2);
+            String cmd = parts[0].trim().toUpperCase();
+            String arg = parts.length > 1 ? parts[1].trim() : null;
+
+            switch (cmd) {
+                case "GET":
+                    handleGet(arg);
+                    break;
+
+                case "PUT":
+                    handlePut(arg);
+                    break;
+
+                case "DELETE":
+                    handleDelete(arg);
+                    break;
+
+                case "QUIT":
+                case "BYE":
+                case "DISCONNECT":
+                    System.out.println(in.readLine());
+                    socket.close();
+                    break;
+
+                    default:
+                    String response = in.readLine();
+                    System.out.println(response);
+
+            }
+        }
+    }
+    private void handleGet(String fileName) throws IOException {
+        String response = in.readLine();
+
+        if (!response.equals("OK")) {
+            out.println(response);
+            return;
+        }
+
+        long size = dataIn.readLong();
+
+        FileOutputStream fos = new FileOutputStream("clientRoot/" + fileName);
+
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        long total = 0;
+
+        while (total < size &&
+        (bytesRead = dataIn.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
+            total += bytesRead;
+        }
+        fos.close();
+        System.out.println("Downloaded file:" + fileName);
+
+    }
+    private void handlePut(String arg) throws IOException {
+
+    }
+    private void handleDelete(String arg) throws IOException {
 
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

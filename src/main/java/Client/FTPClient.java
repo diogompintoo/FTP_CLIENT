@@ -12,11 +12,9 @@ public class FTPClient {
             FTPClientHandler handler = new FTPClientHandler(socket);
             handler.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Could not connect to the server" + e.getMessage());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
     }
-
 }

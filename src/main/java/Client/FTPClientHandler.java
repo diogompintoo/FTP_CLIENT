@@ -1,5 +1,7 @@
 package Client;
 
+import Utility.Constants;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -12,8 +14,8 @@ public class FTPClientHandler {
     private final DataOutputStream dataOut;
 
     public FTPClientHandler(Socket socket) throws IOException {
-        this.socket = socket;
 
+        this.socket = socket;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.out = new PrintWriter(socket.getOutputStream(), true);
         this.dataIn = new DataInputStream(socket.getInputStream());
@@ -22,15 +24,17 @@ public class FTPClientHandler {
     }
 
     public void start() throws IOException, InterruptedException {
+
+        System.out.println(in.readLine());
+        System.out.println(in.readLine());
+
         BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
-
-        System.out.println(in.readLine());
-        System.out.println(in.readLine());
-
         String input;
-        while ((input = console.readLine()) != null) {
+
+        while (true) {
 
             System.out.println("> ");
+            input = console.readLine();
 
             if (input == null || input.trim().isEmpty()) {
                 continue;
@@ -39,6 +43,9 @@ public class FTPClientHandler {
             String[] parts = input.split(" ", 2);
             String cmd = parts[0].trim().toUpperCase();
             String arg = parts.length > 1 ? parts[1].trim() : null;
+
+            out.println(input);
+            out.flush();
 
             switch (cmd) {
                 case "GET":
@@ -61,19 +68,41 @@ public class FTPClientHandler {
                     return;
 
                     default:
-                        out.println(input);
-                        out.flush();
-                        Thread.sleep(100);
-                        while (in.ready()) {
-                            String line = in.readLine();
-                            if (line == null) break;
-                            System.out.println(line);
-                        }
+                        readServerResponse();
+                        break;
             }
         }
     }
+    private void readServerResponse() throws IOException {
+
+        String line;
+
+        while ((line = in.readLine()) != null) {
+            if (line.equals(".") || line.contains("Upload OK") ||
+                    line.startsWith("Directory") || line.startsWith("Deleted")) {
+                System.out.println(line);
+                break;
+            }
+            System.out.println(line);
+
+            if (line.startsWith("No file found") ||
+                    line.startsWith("Unknown command") ||
+                    line.startsWith("Directory") ||
+                    line.startsWith("Failed to delete")) {
+                break;
+            }
+        }
+    }
+
     private void handleGet(String fileName) throws IOException {
+
+        if (fileName == null || fileName.trim().isEmpty()) {
+            System.out.println("Invalid file name");
+            return;
+        }
+
         String response = in.readLine();
+        System.out.println(response);
 
         if (!response.equals("OK")) {
             System.out.println(response);
@@ -82,52 +111,46 @@ public class FTPClientHandler {
 
         long size = dataIn.readLong();
 
-        FileOutputStream fos = new FileOutputStream("clientRoot/" + fileName);
+        File file = new File(Constants.CLIENT_ROOT + fileName);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
 
         byte[] buffer = new byte[1024];
         int bytesRead;
         long total = 0;
 
-        while (total < size) {
-            bytesRead = dataIn.read(buffer);
-            if (bytesRead == -1) break;
-
+        while (total < size && (bytesRead = dataIn.read(buffer)) != -1) {
             fos.write(buffer, 0, bytesRead);
             total += bytesRead;
         }
-        fos.close();
-        System.out.println("Downloaded file:" + fileName);
+        }
+        System.out.println(fileName + "Downloaded");
 
     }
+
     private void handlePut(String fileName) throws IOException {
 
         if (fileName == null || fileName.trim().isEmpty()) {
             System.out.println("No file name provided");
             return;
         }
-        File file = new File("clientRoot/" + fileName);
+        File file = new File(Constants.CLIENT_ROOT + fileName);
 
-        if (!file.exists()) {
+        if (!file.exists() || file.isDirectory()) {
             System.out.println("File does not exist");
             return;
         }
-        out.println("Uploading:" + fileName);
-        out.flush();
-
         dataOut.writeLong(file.length());
         dataOut.flush();
 
-        FileInputStream fis = new FileInputStream(file);
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
 
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-
-        while ((bytesRead = fis.read(buffer)) != -1) {
-            dataOut.write(buffer, 0, bytesRead);
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                dataOut.write(buffer, 0, bytesRead);
+            }
+            dataOut.flush();
         }
-        dataOut.flush();
-        fis.close();
-
         String response = in.readLine();
         System.out.println(response);
 

@@ -87,7 +87,25 @@ public class FTPClientHandler {
         System.out.println("Downloaded file:" + fileName);
 
     }
-    private void handlePut(String arg) throws IOException {
+    private void handlePut(String fileName) throws IOException {
+        File file = new File("clientRoot/" + fileName);
+
+        if (!file.exists()) {
+            System.out.println("No file found");
+            return;
+        }
+        dataOut.writeLong(file.length());
+
+        FileInputStream fis = new FileInputStream(file);
+
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+
+        while ((bytesRead = fis.read(buffer)) != -1) {
+            dataOut.write(buffer, 0, bytesRead);
+        }
+        fis.close();
+        System.out.println("Uploaded file:" + fileName);
 
     }
     private void handleDelete(String arg) throws IOException {

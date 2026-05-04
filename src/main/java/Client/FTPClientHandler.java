@@ -148,6 +148,13 @@ public class FTPClientHandler {
             System.out.println("File does not exist");
             return;
         }
+        String response = in.readLine();
+
+        if (!"READY".equals(response)) {
+            System.out.println("Server response is empty");
+            return;
+        }
+
         dataOut.writeLong(file.length());
         dataOut.flush();
 
@@ -160,8 +167,8 @@ public class FTPClientHandler {
             }
             dataOut.flush();
         }
-        String response = in.readLine();
-        System.out.println(response);
+        String finalResponse = in.readLine();
+        System.out.println(finalResponse);
 
     }
     private void handleDelete(String arg) throws IOException {

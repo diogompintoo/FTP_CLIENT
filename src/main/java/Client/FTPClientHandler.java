@@ -21,7 +21,7 @@ public class FTPClientHandler {
 
     }
 
-    public void start() throws IOException {
+    public void start() throws IOException, InterruptedException {
         BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 
         System.out.println(in.readLine());
@@ -61,11 +61,14 @@ public class FTPClientHandler {
                     return;
 
                     default:
-                    String response;
-                    for (int i = 0; i < parts.length; i++) {
-                        response = in.readLine();
-                        System.out.println(response);
-                    }
+                        out.println(input);
+                        out.flush();
+                        Thread.sleep(100);
+                        while (in.ready()) {
+                            String line = in.readLine();
+                            if (line == null) break;
+                            System.out.println(line);
+                        }
             }
         }
     }

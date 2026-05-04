@@ -32,7 +32,7 @@ public class FTPClientHandler {
 
         while (true) {
 
-            System.out.println("> ");
+            System.out.print("> ");
             input = console.readLine();
 
             if (input == null || input.trim().isEmpty()) {continue;}
@@ -41,30 +41,38 @@ public class FTPClientHandler {
             String cmd = parts[0].trim().toUpperCase();
             String arg = parts.length > 1 ? parts[1].trim() : null;
 
-            out.println(input);
-            out.flush();
 
             switch (cmd) {
                 case "GET":
+                    out.println(input);
+                    out.flush();
                     handleGet(arg);
                     break;
 
                 case "PUT":
+                    out.println(input);
+                    out.flush();
                     handlePut(arg);
                     break;
 
                 case "DELETE":
+                    out.println(input);
+                    out.flush();
                     handleDelete(arg);
                     break;
 
                 case "QUIT":
                 case "BYE":
                 case "DISCONNECT":
+                    out.println(input);
+                    out.flush();
                     System.out.println(in.readLine());
                     socket.close();
                     return;
 
                     default:
+                        out.println(input);
+                        out.flush();
                         readServerResponse();
                         break;
             }

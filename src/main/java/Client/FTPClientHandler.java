@@ -29,7 +29,12 @@ public class FTPClientHandler {
 
         String input;
         while ((input = console.readLine()) != null) {
-            
+
+            System.out.println("> ");
+
+            if (input == null || input.trim().isEmpty()) {
+                continue;
+            }
 
             String[] parts = input.split(" ", 2);
             String cmd = parts[0].trim().toUpperCase();
@@ -56,9 +61,11 @@ public class FTPClientHandler {
                     return;
 
                     default:
-                    String response = in.readLine();
-                    System.out.println(response);
-
+                    String response;
+                    for (int i = 0; i < parts.length; i++) {
+                        response = in.readLine();
+                        System.out.println(response);
+                    }
             }
         }
     }

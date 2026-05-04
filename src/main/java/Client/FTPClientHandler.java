@@ -79,14 +79,17 @@ public class FTPClientHandler {
             hasResponse = true;
             System.out.println(line);
 
-            if (line.equals(".") ||
-                    line.startsWith("Directory") ||
+            if (line.equals(".")){
+                break;
+            }
+            if (line.startsWith("Directory") ||
                     line.startsWith("Deleted") ||
                     line.startsWith("No ") ||
                     line.contains("created") ||
                     line.contains("Upload OK")) {
                 break;
             }
+
         }
         if (!hasResponse) {
             System.out.println("Server response is empty");
@@ -106,7 +109,9 @@ public class FTPClientHandler {
         if (!"OK".equals(response)) return ;
 
         long size = dataIn.readLong();
-        File file = new File(Constants.CLIENT_ROOT + fileName);
+        File file = new File(Constants.CLIENT_ROOT + File.separator + fileName);
+
+        file.getParentFile().mkdirs();
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
 
@@ -129,7 +134,7 @@ public class FTPClientHandler {
             System.out.println("No file name provided");
             return;
         }
-        File file = new File(Constants.CLIENT_ROOT + fileName);
+        File file = new File(Constants.CLIENT_ROOT + File.separator + fileName);
 
         if (!file.exists() || file.isDirectory()) {
             System.out.println("File does not exist");

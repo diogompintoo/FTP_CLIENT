@@ -25,6 +25,7 @@ public class FTPClientHandler {
         BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
 
         System.out.println(in.readLine());
+        System.out.println(in.readLine());
 
         String input;
         while ((input = console.readLine()) != null) {
@@ -53,7 +54,7 @@ public class FTPClientHandler {
                 case "DISCONNECT":
                     System.out.println(in.readLine());
                     socket.close();
-                    break;
+                    return;
 
                     default:
                     String response = in.readLine();
@@ -66,7 +67,6 @@ public class FTPClientHandler {
         String response = in.readLine();
 
         if (!response.equals("OK")) {
-            out.println(response);
             return;
         }
 
@@ -106,6 +106,8 @@ public class FTPClientHandler {
         }
         fis.close();
         System.out.println("Uploaded file:" + fileName);
+        String response = in.readLine();
+        System.out.println(response);
 
     }
     private void handleDelete(String arg) throws IOException {
@@ -113,14 +115,6 @@ public class FTPClientHandler {
     }
 
 }
-
-
-
-
-
-
-
-
 
 
 

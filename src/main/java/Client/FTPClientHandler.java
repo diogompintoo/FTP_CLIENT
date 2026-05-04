@@ -93,7 +93,8 @@ public class FTPClientHandler {
             if (line.startsWith("Directory") ||
                     line.startsWith("Deleted") ||
                     line.startsWith("No ") ||
-                    line.contains("created") ||
+                    line.contains("Failed") ||
+                    line.contains("Downloaded file: ") ||
                     line.contains("Upload OK")) {
                 break;
             }
@@ -114,7 +115,7 @@ public class FTPClientHandler {
         String response = in.readLine();
         System.out.println(response);
 
-        if (!"OK".equals(response)) return ;
+        if (!"Downloaded file: ".equals(response)) return ;
 
         long size = dataIn.readLong();
         File file = new File(Constants.CLIENT_ROOT + File.separator + fileName);

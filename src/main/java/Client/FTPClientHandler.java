@@ -20,7 +20,6 @@ public class FTPClientHandler {
         this.out = new PrintWriter(socket.getOutputStream(), true);
         this.dataIn = new DataInputStream(socket.getInputStream());
         this.dataOut = new DataOutputStream(socket.getOutputStream());
-
     }
 
     public void start() throws IOException, InterruptedException {
@@ -36,9 +35,7 @@ public class FTPClientHandler {
             System.out.println("> ");
             input = console.readLine();
 
-            if (input == null || input.trim().isEmpty()) {
-                continue;
-            }
+            if (input == null || input.trim().isEmpty()) {continue;}
 
             String[] parts = input.split(" ", 2);
             String cmd = parts[0].trim().toUpperCase();
@@ -76,21 +73,23 @@ public class FTPClientHandler {
     private void readServerResponse() throws IOException {
 
         String line;
+        boolean hasResponse = false;
 
         while ((line = in.readLine()) != null) {
-            if (line.equals(".") || line.contains("Upload OK") ||
-                    line.startsWith("Directory") || line.startsWith("Deleted")) {
-                System.out.println(line);
-                break;
-            }
+            hasResponse = true;
             System.out.println(line);
 
-            if (line.startsWith("No file found") ||
-                    line.startsWith("Unknown command") ||
+            if (line.equals(".") ||
                     line.startsWith("Directory") ||
-                    line.startsWith("Failed to delete")) {
+                    line.startsWith("Deleted") ||
+                    line.startsWith("No ") ||
+                    line.contains("created") ||
+                    line.contains("Upload OK")) {
                 break;
             }
+        }
+        if (!hasResponse) {
+            System.out.println("Server response is empty");
         }
     }
 
@@ -104,14 +103,11 @@ public class FTPClientHandler {
         String response = in.readLine();
         System.out.println(response);
 
-        if (!response.equals("OK")) {
-            System.out.println(response);
-            return;
-        }
+        if (!"OK".equals(response)) return ;
 
         long size = dataIn.readLong();
-
         File file = new File(Constants.CLIENT_ROOT + fileName);
+
         try (FileOutputStream fos = new FileOutputStream(file)) {
 
         byte[] buffer = new byte[1024];

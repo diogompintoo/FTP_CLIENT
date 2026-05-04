@@ -29,8 +29,7 @@ public class FTPClientHandler {
 
         String input;
         while ((input = console.readLine()) != null) {
-
-            out.println(input);
+            
 
             String[] parts = input.split(" ", 2);
             String cmd = parts[0].trim().toUpperCase();
@@ -67,6 +66,7 @@ public class FTPClientHandler {
         String response = in.readLine();
 
         if (!response.equals("OK")) {
+            System.out.println(response);
             return;
         }
 
@@ -78,8 +78,10 @@ public class FTPClientHandler {
         int bytesRead;
         long total = 0;
 
-        while (total < size &&
-        (bytesRead = dataIn.read(buffer)) != -1) {
+        while (total < size) {
+            bytesRead = dataIn.read(buffer);
+            if (bytesRead == -1) break;
+
             fos.write(buffer, 0, bytesRead);
             total += bytesRead;
         }
@@ -88,13 +90,22 @@ public class FTPClientHandler {
 
     }
     private void handlePut(String fileName) throws IOException {
+
+        if (fileName == null || fileName.trim().isEmpty()) {
+            System.out.println("No file name provided");
+            return;
+        }
         File file = new File("clientRoot/" + fileName);
 
         if (!file.exists()) {
-            System.out.println("No file found");
+            System.out.println("File does not exist");
             return;
         }
+        out.println("Uploading:" + fileName);
+        out.flush();
+
         dataOut.writeLong(file.length());
+        dataOut.flush();
 
         FileInputStream fis = new FileInputStream(file);
 
@@ -104,8 +115,9 @@ public class FTPClientHandler {
         while ((bytesRead = fis.read(buffer)) != -1) {
             dataOut.write(buffer, 0, bytesRead);
         }
+        dataOut.flush();
         fis.close();
-        System.out.println("Uploaded file:" + fileName);
+
         String response = in.readLine();
         System.out.println(response);
 

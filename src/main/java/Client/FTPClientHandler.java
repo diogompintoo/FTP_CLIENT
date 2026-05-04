@@ -113,9 +113,12 @@ public class FTPClientHandler {
         }
 
         String response = in.readLine();
-        System.out.println(response);
+        System.out.println("Server: " + response);
 
-        if (!response.startsWith("Downloaded file :")) return ;
+        if (!"OK".equals(response)){
+            System.out.println("Download failed");
+            return;
+        }
 
         long size = dataIn.readLong();
         File file = new File(Constants.CLIENT_ROOT + File.separator + fileName);
@@ -133,7 +136,7 @@ public class FTPClientHandler {
             total += bytesRead;
         }
         }
-        System.out.println(fileName + "Downloaded");
+        System.out.println(fileName + "Downloaded: " + fileName);
 
     }
 

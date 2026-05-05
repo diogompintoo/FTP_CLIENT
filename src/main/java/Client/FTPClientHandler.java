@@ -175,10 +175,22 @@ public class FTPClientHandler {
         System.out.println(finalResponse);
 
     }
-    private void handleDelete(String arg) throws IOException {
+    private void handleDelete(String fileName) throws IOException {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            System.out.println("No file name provided");
+            return;
+        }
+        String response = in.readLine();
+        System.out.println("Server: " + response);
 
+        if (response.startsWith("Delete")) {
+            System.out.println("Deleted file: " + fileName);
+        }else if (response.startsWith("No file found")) {
+            System.out.println("File not found.");
+        }else if (response.startsWith("Failed")){
+            System.out.println("Fail to delete file: " + fileName);
+        }
     }
-
 }
 
 
